@@ -1,7 +1,7 @@
 {
-  "name": "mini-breakpad-server",
-  "description": "Minimum breakpad crash reports collecting server",
-  "version": "0.2.0",
+  "name": "caliper",
+  "description": "simple breakpad server/processor",
+  "version": "0.0.1",
   "bin": {
     "mini-breakpad-server": "bin/mini-breakpad-server"
   },
@@ -37,14 +37,14 @@
   "licenses": [
     {
       "type": "MIT",
-      "url": "http://github.com/atom/mini-breakpad-server/raw/master/LICENSE"
+      "url": "http://github.com/rrohrer/caliper/raw/master/LICENSE"
     }
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/atom/mini-breakpad-server.git"
+    "url": "https://github.com/rrohrer/caliper.git"
   },
   "bugs": {
-    "url": "https://github.com/atom/mini-breakpad-server/issues"
+    "url": "https://github.com/caliper/issues"
   }
 }
