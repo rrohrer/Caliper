@@ -31,7 +31,7 @@ app.post '/webhook', (req, res, next) ->
   console.log 'webhook requested', req.body.repository.full_name
   res.end()
 
-app.post '/post', (req, res, next) ->
+app.post '/crash_upload', (req, res, next) ->
   saver.saveRequest req, db, (err, filename) ->
     return next err if err?
 
