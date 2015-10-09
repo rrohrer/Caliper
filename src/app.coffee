@@ -6,6 +6,7 @@ reader = require './reader'
 saver = require './saver'
 Database = require './database'
 WebHook = require './webhook'
+symbols = require './symbols'
 
 app = express()
 webhook = new WebHook
@@ -37,6 +38,13 @@ app.post '/post', (req, res, next) ->
     console.log 'saved', filename
     res.send path.basename(filename)
     res.end()
+
+# handle the sympol upload post command.
+app.post '/symbol_upload', (req, res, next) ->
+  return symbols.saveSymbols req, (error, destination) ->
+    return next error if error?
+    console.log "Saved Symbols: #{destination}"
+    return res.end()
 
 root =
   if process.env.MINI_BREAKPAD_SERVER_ROOT?
