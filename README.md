@@ -1,14 +1,17 @@
-# mini-breakpad-server
+# Caliper
+### Reviving mini-breakpad-server
+Mini-breakpad-server is basically abandonded at this point.  Breakpad is still amazing technology, and people want to use it.  Caliper is intended to be a middle ground between nothing and Socorro (Mozilla's breakpad infrastructure).
 
-Minimum collecting server for crash reports sent by
+## Caliper holds your breaks.
+This intends to be a simple server for crash reports sent by
 [google-breakpad](https://code.google.com/p/google-breakpad/).
 
 
 ## Features
 
-* No requirement for setting up databases or web servers.
 * Collecting crash reports with minidump files.
 * Simple web interface for viewing translated crash reports.
+* Uploading of symbols using google's tools for breakpad (symupload).
 
 ## Run
 
