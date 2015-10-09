@@ -3,7 +3,7 @@
   "description": "simple breakpad server/processor",
   "version": "0.0.1",
   "bin": {
-    "mini-breakpad-server": "bin/mini-breakpad-server"
+    "caliper": "bin/caliper"
   },
   "scripts": {
     "prepublish": "grunt coffee"
