@@ -15,7 +15,8 @@ This intends to be a simple server for crash reports sent by
 
 ## Run
 
-* `npm install .`
+* `npm install .` -- if this fails make sure you have node-gyp setup correctly
 * `grunt`
-* Put your breakpad symbols under `pool/symbols/PRODUCT_NAME`
+* Put your breakpad symbols under `pool/symbols/PDBNAME/PDBUNIQUEIDENTIFIER/PDBNAMEASSYM`
+* OR send a POST request to your server at /symbol_upload using googles symupload tool.
 * `node lib/app.js`
