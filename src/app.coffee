@@ -13,7 +13,7 @@ webhook = new WebHook
 
 db = new Database
 db.on 'load', ->
-  port = process.env.MINI_BREAKPAD_SERVER_PORT ? 1127
+  port = process.env.MINI_BREAKPAD_SERVER_PORT ? 80
   app.listen port
   console.log "Listening on port #{port}"
 
