@@ -17,9 +17,19 @@ module.exports = (grunt) ->
 
       src: ['src/**/*.coffee']
 
+    jade:
+      debug:
+        files:
+          'lib/jade':['views/**/*.jade']
+        options:
+          pretty: true
+          compileDebug: true
+
   grunt.loadNpmTasks('grunt-contrib-coffee')
   grunt.loadNpmTasks('grunt-shell')
   grunt.loadNpmTasks('grunt-coffeelint')
+  grunt.loadNpmTasks('grunt-jade')
+  grunt.registerTask('jaded', ['jade'])
   grunt.registerTask('lint', ['coffeelint'])
   grunt.registerTask('default', ['coffee', 'lint'])
   grunt.registerTask 'clean', ->

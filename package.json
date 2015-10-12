@@ -13,6 +13,7 @@
     "decompress-zip": "0.0.4",
     "dirty": "0.9.7",
     "express": "4.13.3",
+    "express-session": "1.11.3",
     "formidable": "~1.0.14",
     "fs-plus": "0.10.0",
     "github-releases": "0.1.x",
@@ -22,6 +23,8 @@
     "minidump": "0.9.0",
     "mkdirp": "~0.3.5",
     "node-uuid": "~1.4.1",
+    "passport": "0.3.0",
+    "passport-local": "1.0.0",
     "temp": "0.7.0",
     "wrench": "1.5.x"
   },
@@ -31,6 +34,7 @@
     "grunt-contrib-coffee": "~0.6.6",
     "grunt-coffeelint": "~0.0.13",
     "grunt-cli": "~0.1.7",
+    "grunt-jade": "0.5.1",
     "grunt-shell": "~0.2.2",
     "rimraf": "~2.1.4"
   },

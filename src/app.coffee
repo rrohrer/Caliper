@@ -1,12 +1,41 @@
 path = require 'path'
 express = require 'express'
+expressSession = require 'express-session'
 methodOverride = require 'method-override'
 bodyParser = require 'body-parser'
+passport = require 'passport'
+passportLocal = require 'passport-local'
+
+#local requirements
 reader = require './reader'
 saver = require './saver'
 Database = require './database'
 WebHook = require './webhook'
 symbols = require './symbols'
+
+# THIS SHOULD BE CHANGED BEFORE RUNNING CALIPER
+secret_session_string = "make_sure_to_change_this"
+secret_admin_password = "catpat"
+
+# TODO change this to hit a database of users
+# this is very temporary. just to get basic auth off the ground
+localStrategy = new passportLocal.Strategy (username, password, callback) ->
+  return callback null, false, message: "Incorrect Username" unless username is "admin"
+  return callback null, false, message: "Incorrect Password" unless username is "admin" and password is secret_admin_password
+  return callback null, user: "this is the user object"
+
+passport.use localStrategy
+
+passport.serializeUser (user, callback) ->
+  callback null, user
+
+passport.deserializeUser (user, callback) ->
+  callback null, user
+
+# simple function to check if user is logged in
+isLoggedIn = (req, res, next) ->
+  return next() if req.isAuthenticated()
+  res.redirect("/login_page")
 
 app = express()
 webhook = new WebHook
@@ -24,6 +53,11 @@ app.use bodyParser.urlencoded(extended : true)
 app.use methodOverride()
 app.use (err, req, res, next) ->
   res.send 500, "Bad things happened:<br/> #{err.message}"
+
+# set up session variables this is needed for AUTH
+app.use expressSession(secret: secret_session_string, resave: true, saveUninitialized: true)
+app.use passport.initialize()
+app.use passport.session()
 
 app.post '/webhook', (req, res, next) ->
   webhook.onRequest req
@@ -51,11 +85,15 @@ root =
     "#{process.env.MINI_BREAKPAD_SERVER_ROOT}/"
   else
     ''
+app.post "/login", passport.authenticate("local", successRedirect:"/#{root}", failureRedirect:"/login_page")
 
-app.get "/#{root}", (req, res, next) ->
+app.get "/login_page", (req, res, next) ->
+  res.render 'login'
+
+app.get "/#{root}", isLoggedIn, (req, res, next) ->
   res.render 'index', title: 'Crash Reports', records: db.getAllRecords()
 
-app.get "/#{root}view/:id", (req, res, next) ->
+app.get "/#{root}view/:id", isLoggedIn, (req, res, next) ->
   db.restoreRecord req.params.id, (err, record) ->
     return next err if err?
 
