@@ -5,7 +5,7 @@ methodOverride = require 'method-override'
 bodyParser = require 'body-parser'
 passport = require 'passport'
 passportLocal = require 'passport-local'
-
+randomstring = require 'randomstring'
 #local requirements
 reader = require './reader'
 saver = require './saver'
@@ -14,8 +14,8 @@ WebHook = require './webhook'
 symbols = require './symbols'
 
 # THIS SHOULD BE CHANGED BEFORE RUNNING CALIPER
-secret_session_string = "make_sure_to_change_this"
-secret_admin_password = "catpat"
+secret_session_string = process.env.MINI_BREAKPAD_SERVER_SECRET or randomstring.generate()
+secret_admin_password = process.env.MINI_BREAKPAD_ADMIN_PASSWORD or randomstring.generate()
 
 # TODO change this to hit a database of users
 # this is very temporary. just to get basic auth off the ground
@@ -45,6 +45,8 @@ db.on 'load', ->
   port = process.env.MINI_BREAKPAD_SERVER_PORT ? 80
   app.listen port
   console.log "Listening on port #{port}"
+  console.log "Using random admin password: #{secret_admin_password}" if secret_admin_password != process.env.MINI_BREAKPAD_ADMIN_PASSWORD
+  console.log "Using random api_key: #{api_key}" if api_key != process.env.MINI_BREAKPAD_API_KEY
 
 app.set 'views', path.resolve(__dirname, '..', 'views')
 app.set 'view engine', 'jade'
@@ -74,7 +76,7 @@ app.post '/crash_upload', (req, res, next) ->
     res.end()
 
 # handle the sympol upload post command.
-app.post '/symbol_upload', (req, res, next) ->
+app.post '/symbol_upload', isLoggedIn, (req, res, next) ->
   return symbols.saveSymbols req, (error, destination) ->
     return next error if error?
     console.log "Saved Symbols: #{destination}"
