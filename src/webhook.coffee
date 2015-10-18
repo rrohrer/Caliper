@@ -35,10 +35,10 @@ class WebHook
             @cleanup dir
             return
           file = fs.createWriteStream filename
-          stream.on 'end', @extractFile.bind(this, dir, filename)
+          stream.on 'end', @extractFile.bind(this, dir, filename, asset.name)
           stream.pipe file
 
-  extractFile: (dir, filename) ->
+  extractFile: (dir, filename, asset) ->
     targetDirectory = "#{filename}-unzipped"
     unzipper = new DecompressZip filename
     unzipper.on 'error', (error) =>
@@ -47,10 +47,10 @@ class WebHook
     unzipper.on 'extract', =>
       fs.closeSync unzipper.fd
       fs.unlinkSync filename
-      @copySymbolFiles dir, targetDirectory
+      @copySymbolFiles dir, targetDirectory, asset
     unzipper.extract path: targetDirectory
 
-  copySymbolFiles: (dir, targetDirectory) ->
+  copySymbolFiles: (dir, targetDirectory, asset) ->
     glob '*.breakpad.syms', cwd: targetDirectory, (error, dirs) =>
       if error?
         console.log 'Failed to find breakpad symbols in', targetDirectory, error
@@ -60,6 +60,7 @@ class WebHook
       symbolsDirectory = path.join 'pool', 'symbols'
       for symbol in dirs
         fs.copySync path.join(targetDirectory, symbol), symbolsDirectory
+        console.log "Finnished processing symbols from: #{asset}"
       @cleanup dir
 
   cleanup: (dir) ->
