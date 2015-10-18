@@ -86,7 +86,7 @@ app.get "/#{root}fetch", (req, res, next) ->
   processRel = (rel) ->
     console.log "Queueing symbols from #{rel.name}..."
     webhook.downloadAssets {'repository': {'full_name': req.query.project}, 'release': rel}
-    
+
   github.getReleases {}, (err, rels)->
     return next err if err?
     return next "Error fetching releases from #{req.query.project}" if !rels?
@@ -101,7 +101,6 @@ app.post "/#{root}crash_upload", (req, res, next) ->
     res.send path.basename(filename)
     res.end()
 
-# handle the sympol upload post command.
 app.post "/#{root}symbol_upload", (req, res, next) ->
   return symbols.saveSymbols req, (error, destination) ->
     return next error if error?
