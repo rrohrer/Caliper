@@ -76,7 +76,7 @@ app.post '/crash_upload', (req, res, next) ->
     res.end()
 
 # handle the sympol upload post command.
-app.post '/symbol_upload', (req, res, next) ->
+app.post '/symbol_upload', isLoggedIn, (req, res, next) ->
   return symbols.saveSymbols req, (error, destination) ->
     return next error if error?
     console.log "Saved Symbols: #{destination}"
