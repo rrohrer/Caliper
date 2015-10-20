@@ -25,6 +25,7 @@
     "node-uuid": "~1.4.1",
     "passport": "0.3.0",
     "passport-local": "1.0.0",
+    "randomstring": "^1.1.0",
     "temp": "0.7.0",
     "wrench": "1.5.x"
   },

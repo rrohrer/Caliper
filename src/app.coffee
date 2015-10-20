@@ -5,17 +5,19 @@ methodOverride = require 'method-override'
 bodyParser = require 'body-parser'
 passport = require 'passport'
 passportLocal = require 'passport-local'
-
+randomstring = require 'randomstring'
 #local requirements
 reader = require './reader'
 saver = require './saver'
 Database = require './database'
 WebHook = require './webhook'
 symbols = require './symbols'
+GitHub        = require 'github-releases'
 
 # THIS SHOULD BE CHANGED BEFORE RUNNING CALIPER
-secret_session_string = "make_sure_to_change_this"
-secret_admin_password = "catpat"
+secret_session_string = process.env.MINI_BREAKPAD_SERVER_SECRET or randomstring.generate()
+secret_admin_password = process.env.MINI_BREAKPAD_ADMIN_PASSWORD or randomstring.generate()
+api_key = process.env.MINI_BREAKPAD_API_KEY or randomstring.generate()
 
 # TODO change this to hit a database of users
 # this is very temporary. just to get basic auth off the ground
@@ -45,6 +47,8 @@ db.on 'load', ->
   port = process.env.MINI_BREAKPAD_SERVER_PORT ? 80
   app.listen port
   console.log "Listening on port #{port}"
+  console.log "Using random admin password: #{secret_admin_password}" if secret_admin_password != process.env.MINI_BREAKPAD_ADMIN_PASSWORD
+  console.log "Using random api_key: #{api_key}" if api_key != process.env.MINI_BREAKPAD_API_KEY
 
 app.set 'views', path.resolve(__dirname, '..', 'views')
 app.set 'view engine', 'jade'
@@ -63,6 +67,23 @@ app.post '/webhook', (req, res, next) ->
   webhook.onRequest req
 
   console.log 'webhook requested', req.body.repository.full_name
+  res.end()
+
+app.get '/fetch', (req, res, next) ->
+  return next "Invalid key" if req.query.key != api_key
+
+  github = new GitHub
+    repo: req.query.project
+    token: process.env.MINI_BREAKPAD_SERVER_TOKEN
+
+  processRel = (rel) ->
+    console.log "Queueing symbols from #{rel.name}..."
+    webhook.downloadAssets {'repository': {'full_name': req.query.project}, 'release': rel}
+    
+  github.getReleases {}, (err, rels)-> 
+    return next err if err?
+    return next "Error fetching releases from #{req.query.project}" if !rels?
+    processRel rel for rel in rels
   res.end()
 
 app.post '/crash_upload', (req, res, next) ->
