@@ -19,6 +19,13 @@ secret_session_string = process.env.MINI_BREAKPAD_SERVER_SECRET or randomstring.
 secret_admin_password = process.env.MINI_BREAKPAD_ADMIN_PASSWORD or randomstring.generate()
 api_key = process.env.MINI_BREAKPAD_API_KEY or randomstring.generate()
 
+
+root =
+  if process.env.MINI_BREAKPAD_SERVER_ROOT?
+    "#{process.env.MINI_BREAKPAD_SERVER_ROOT}/"
+  else
+    ''
+
 # TODO change this to hit a database of users
 # this is very temporary. just to get basic auth off the ground
 localStrategy = new passportLocal.Strategy (username, password, callback) ->
@@ -37,7 +44,7 @@ passport.deserializeUser (user, callback) ->
 # simple function to check if user is logged in
 isLoggedIn = (req, res, next) ->
   return next() if req.isAuthenticated()
-  res.redirect("/login_page")
+  res.redirect("/#{root}login_page")
 
 app = express()
 webhook = new WebHook
@@ -63,13 +70,13 @@ app.use expressSession(secret: secret_session_string, resave: true, saveUninitia
 app.use passport.initialize()
 app.use passport.session()
 
-app.post '/webhook', (req, res, next) ->
+app.post '/#{root}webhook', (req, res, next) ->
   webhook.onRequest req
 
   console.log 'webhook requested', req.body.repository.full_name
   res.end()
 
-app.get '/fetch', (req, res, next) ->
+app.get '/#{root}fetch', (req, res, next) ->
   return next "Invalid key" if req.query.key != api_key
 
   github = new GitHub
@@ -86,7 +93,7 @@ app.get '/fetch', (req, res, next) ->
     processRel rel for rel in rels
   res.end()
 
-app.post '/crash_upload', (req, res, next) ->
+app.post '/#{root}crash_upload', (req, res, next) ->
   saver.saveRequest req, db, (err, filename) ->
     return next err if err?
 
@@ -95,20 +102,15 @@ app.post '/crash_upload', (req, res, next) ->
     res.end()
 
 # handle the sympol upload post command.
-app.post '/symbol_upload', (req, res, next) ->
+app.post '/#{root}symbol_upload', (req, res, next) ->
   return symbols.saveSymbols req, (error, destination) ->
     return next error if error?
     console.log "Saved Symbols: #{destination}"
     return res.end()
 
-root =
-  if process.env.MINI_BREAKPAD_SERVER_ROOT?
-    "#{process.env.MINI_BREAKPAD_SERVER_ROOT}/"
-  else
-    ''
-app.post "/login", passport.authenticate("local", successRedirect:"/#{root}", failureRedirect:"/login_page")
+app.post "/#{root}login", passport.authenticate("local", successRedirect:"/#{root}", failureRedirect:"/#{root}login_page")
 
-app.get "/login_page", (req, res, next) ->
+app.get "/#{root}login_page", (req, res, next) ->
   res.render 'login'
 
 app.get "/#{root}", isLoggedIn, (req, res, next) ->
