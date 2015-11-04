@@ -87,7 +87,7 @@ app.get '/#{root}fetch', (req, res, next) ->
     console.log "Queueing symbols from #{rel.name}..."
     webhook.downloadAssets {'repository': {'full_name': req.query.project}, 'release': rel}
     
-  github.getReleases {}, (err, rels)-> 
+  github.getReleases {}, (err, rels)->
     return next err if err?
     return next "Error fetching releases from #{req.query.project}" if !rels?
     processRel rel for rel in rels
