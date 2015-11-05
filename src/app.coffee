@@ -70,13 +70,13 @@ app.use expressSession(secret: secret_session_string, resave: true, saveUninitia
 app.use passport.initialize()
 app.use passport.session()
 
-app.post '/#{root}webhook', (req, res, next) ->
+app.post "/#{root}webhook", (req, res, next) ->
   webhook.onRequest req
 
   console.log 'webhook requested', req.body.repository.full_name
   res.end()
 
-app.get '/#{root}fetch', (req, res, next) ->
+app.get "/#{root}fetch", (req, res, next) ->
   return next "Invalid key" if req.query.key != api_key
 
   github = new GitHub
@@ -93,7 +93,7 @@ app.get '/#{root}fetch', (req, res, next) ->
     processRel rel for rel in rels
   res.end()
 
-app.post '/#{root}crash_upload', (req, res, next) ->
+app.post "/#{root}crash_upload", (req, res, next) ->
   saver.saveRequest req, db, (err, filename) ->
     return next err if err?
 
@@ -102,7 +102,7 @@ app.post '/#{root}crash_upload', (req, res, next) ->
     res.end()
 
 # handle the sympol upload post command.
-app.post '/#{root}symbol_upload', (req, res, next) ->
+app.post "/#{root}symbol_upload", (req, res, next) ->
   return symbols.saveSymbols req, (error, destination) ->
     return next error if error?
     console.log "Saved Symbols: #{destination}"
