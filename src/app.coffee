@@ -81,7 +81,6 @@ app.get "/#{root}fetch", (req, res, next) ->
 
   github = new GitHub
     repo: req.query.project
-    token: process.env.MINI_BREAKPAD_SERVER_TOKEN
 
   processRel = (rel) ->
     console.log "Queueing symbols from #{rel.name}..."
