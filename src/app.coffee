@@ -89,11 +89,13 @@ app.get "/#{root}fetch", (req, res, next) ->
   processRel = (rel, rest) ->
     console.log "Processing symbols from #{rel.name}..."
     webhook.downloadAssets {'repository': {'full_name': req.query.project}, 'release': rel}, (err)->
+      if err?
+        console.log "Failed to process #{rel.name}: #{err}"  if err?
+        return
       console.log "Processing symbols from #{rel.name}: Done..."
-      console.log "Failed to process #{rel.name}: #{err}"  if err?
-      return next err if err?
+      return if rest.length == 0
       rel = rest.pop()
-      processRel rel, rest unless rest.length == 0
+      processRel rel, rest
   
   github.getReleases {}, (err, rels)->
     return next err if err?
