@@ -66,6 +66,8 @@ app.use methodOverride()
 app.use (err, req, res, next) ->
   res.send 500, "Bad things happened:<br/> #{err.message}"
 
+app.on 'error', (err)->
+  console.log "Whoops #{err}"
 # set up session variables this is needed for AUTH
 app.use expressSession(secret: secret_session_string, resave: true, saveUninitialized: true)
 app.use passport.initialize()
