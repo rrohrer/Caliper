@@ -56,6 +56,7 @@ db.on 'load', ->
   console.log "Listening on port #{port}"
   console.log "Using random admin password: #{secret_admin_password}" if secret_admin_password != process.env.MINI_BREAKPAD_ADMIN_PASSWORD
   console.log "Using random api_key: #{api_key}" if api_key != process.env.MINI_BREAKPAD_API_KEY
+  console.log "Using provided github server token" if process.env.MINI_BREAKPAD_SERVER_TOKEN
 
 app.set 'views', path.resolve(__dirname, '..', 'views')
 app.set 'view engine', 'jade'
@@ -81,15 +82,23 @@ app.get "/#{root}fetch", (req, res, next) ->
 
   github = new GitHub
     repo: req.query.project
+    token: process.env.MINI_BREAKPAD_SERVER_TOKEN
 
-  processRel = (rel) ->
-    console.log "Queueing symbols from #{rel.name}..."
-    webhook.downloadAssets {'repository': {'full_name': req.query.project}, 'release': rel}
-
+  processRel = (rel, rest) ->
+    console.log "Processing symbols from #{rel.name}..."
+    webhook.downloadAssets {'repository': {'full_name': req.query.project}, 'release': rel}, (err)->
+      console.log "Processing symbols from #{rel.name}: Done..."
+      console.log "Failed to process #{rel.name}: #{err}"  if err?
+      return next err if err?
+      rel = rest.pop()
+      processRel rel, rest unless rest.length == 0
+  
   github.getReleases {}, (err, rels)->
     return next err if err?
     return next "Error fetching releases from #{req.query.project}" if !rels?
-    processRel rel for rel in rels
+    
+    rel = rels.pop()
+    processRel rel, rels
   res.end()
 
 app.post "/#{root}crash_upload", (req, res, next) ->
