@@ -10,6 +10,7 @@ randomstring = require 'randomstring'
 reader = require './reader'
 saver = require './saver'
 Database = require './database'
+SymbolDatabase = require './symbol-database'
 WebHook = require './webhook'
 symbols = require './symbols'
 GitHub        = require 'github-releases'
@@ -47,16 +48,24 @@ isLoggedIn = (req, res, next) ->
   res.redirect("/#{root}login_page")
 
 app = express()
-webhook = new WebHook
-
 db = new Database
-db.on 'load', ->
+symbDb = new SymbolDatabase
+webhook = new WebHook(symbDb)
+
+startServer = () ->
   port = process.env.MINI_BREAKPAD_SERVER_PORT ? 80
   app.listen port
   console.log "Listening on port #{port}"
   console.log "Using random admin password: #{secret_admin_password}" if secret_admin_password != process.env.MINI_BREAKPAD_ADMIN_PASSWORD
   console.log "Using random api_key: #{api_key}" if api_key != process.env.MINI_BREAKPAD_API_KEY
   console.log "Using provided github server token" if process.env.MINI_BREAKPAD_SERVER_TOKEN
+
+db.on 'load', ->
+  console.log "crash db ready"
+  symbDb.on 'load', ->
+    console.log "symb db ready"
+    startServer()
+
 
 app.set 'views', path.resolve(__dirname, '..', 'views')
 app.set 'view engine', 'jade'
@@ -135,3 +144,6 @@ app.get "/#{root}view/:id", isLoggedIn, (req, res, next) ->
       return next err if err?
       fields = record.fields
       res.render 'view', {title: 'Crash Report', report, fields}
+
+app.get "/#{root}symbol/", isLoggedIn, (req, res, next) ->
+  res.render 'symbols', title: 'Symbols', symbols: symbDb.getAllRecords()
