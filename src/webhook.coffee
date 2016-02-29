@@ -23,7 +23,7 @@ class WebHook
     payload = req.body
 
     return unless event is 'release' and payload.action is 'published'
-    @downloadAssets payload (msg) ->
+    @downloadAssets payload, (msg) ->
       console.log "Failed to process webhook: #{msg}..."
 
   downloadAssets: (payload, callback) ->
