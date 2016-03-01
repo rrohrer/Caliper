@@ -26,7 +26,7 @@ class WebHook
 
     return unless event is 'release' and payload.action is 'published'
     @downloadAssets payload, (msg) ->
-      console.log "Failed to process webhook: #{msg}..."
+      console.log "Failed to process webhook: #{msg}..." if msg
 
   downloadAssets: (payload, callback) ->
     github = new GitHub
