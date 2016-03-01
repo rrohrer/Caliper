@@ -12,10 +12,13 @@ block content
         each record in records
           tr
             td
-              = record.product
+              a(href='view/' + record.id)
+                = record.product
             td
-              = record.version
+              a(href='view/' + record.id)
+                = record.version
             td
-              = record.time.toLocaleString()
+              a(href='view/' + record.id)
+                = record.time.toLocaleString()
     if ! records.length
       .alert.alert-info(role="alert") No crashdumps found
