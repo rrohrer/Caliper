@@ -1,6 +1,7 @@
 doctype 5
 html
-  head
-    title= title
-  body
-    block content
+  include head.jade
+  body(role="document")
+    include nav.jade
+    .container.theme-showcase(role="main")
+      block content

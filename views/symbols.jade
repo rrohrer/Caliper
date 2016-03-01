@@ -2,7 +2,7 @@ extends layout
 
 block content
   h1= title
-  table
+  table.table.table-striped
       thead 
         tr
           td Release
@@ -17,3 +17,5 @@ block content
               = symbol.name
             td
               = symbol.time.toLocaleString()
+    if ! symbols.length
+      .alert.alert-info(role="alert") No symbols found
