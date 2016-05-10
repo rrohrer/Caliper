@@ -1,12 +1,14 @@
 extends layout
 
 block content
-  form(action='login', method='post')
+  h1 Login
+  form.form-signin(action='login', method='post')
+    h2.form-signin-heading Please sign in
     div
-      label username:
-      input(type='text', name='username')
+      label.sr-only username:
+      input#inputEmail.form-control(type='text', name='username', placeholder="Username", required, autofocus)
     div
-      label password:
-      input(type='password', name='password')
+      label.sr-only password:
+      input#inputPassword.form-control(type='password', name='password', placeholder="Password", required)
     div
-      input(type='submit', value='Log in')
+      button.btn.btn-lg.btn-primary.btn-block(type='submit') Sign in

@@ -2,8 +2,23 @@ extends layout
 
 block content
   h1= title
-  ol
-    each record in records
-      li
-        a(href='view/' + record.id)
-          = 'v' + record.version + ' ' + record.time.toLocaleString()
+  table.table.table-striped
+      thead 
+        tr
+          td Product
+          td Version
+          td Date
+      tbody
+        each record in records
+          tr
+            td
+              a(href='view/' + record.id)
+                = record.product
+            td
+              a(href='view/' + record.id)
+                = record.version
+            td
+              a(href='view/' + record.id)
+                = record.time.toLocaleString()
+    if ! records.length
+      .alert.alert-info(role="alert") No crashdumps found

@@ -1,0 +1,21 @@
+extends layout
+
+block content
+  h1= title
+  table.table.table-striped
+      thead 
+        tr
+          td Release
+          td Symbol
+          td Date
+      tbody
+        each symbol in symbols
+          tr
+            td
+              = symbol.release
+            td
+              = symbol.name
+            td
+              = symbol.time.toLocaleString()
+    if ! symbols.length
+      .alert.alert-info(role="alert") No symbols found

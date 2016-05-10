@@ -10,6 +10,7 @@ randomstring = require 'randomstring'
 reader = require './reader'
 saver = require './saver'
 Database = require './database'
+SymbolDatabase = require './symbol-database'
 WebHook = require './webhook'
 symbols = require './symbols'
 GitHub        = require 'github-releases'
@@ -47,15 +48,24 @@ isLoggedIn = (req, res, next) ->
   res.redirect("/#{root}login_page")
 
 app = express()
-webhook = new WebHook
-
 db = new Database
-db.on 'load', ->
-  port = process.env.MINI_BREAKPAD_SERVER_PORT ? 80
+symbDb = new SymbolDatabase
+webhook = new WebHook(symbDb)
+
+startServer = () ->
+  port = process.env.MINI_BREAKPAD_SERVER_PORT || process.env.PORT || 80
   app.listen port
   console.log "Listening on port #{port}"
   console.log "Using random admin password: #{secret_admin_password}" if secret_admin_password != process.env.MINI_BREAKPAD_ADMIN_PASSWORD
   console.log "Using random api_key: #{api_key}" if api_key != process.env.MINI_BREAKPAD_API_KEY
+  console.log "Using provided github server token" if process.env.MINI_BREAKPAD_SERVER_TOKEN
+
+db.on 'load', ->
+  console.log "crash db ready"
+  symbDb.on 'load', ->
+    console.log "symb db ready"
+    startServer()
+
 
 app.set 'views', path.resolve(__dirname, '..', 'views')
 app.set 'view engine', 'jade'
@@ -65,6 +75,8 @@ app.use methodOverride()
 app.use (err, req, res, next) ->
   res.send 500, "Bad things happened:<br/> #{err.message}"
 
+app.on 'error', (err)->
+  console.log "Whoops #{err}"
 # set up session variables this is needed for AUTH
 app.use expressSession(secret: secret_session_string, resave: true, saveUninitialized: true)
 app.use passport.initialize()
@@ -83,14 +95,23 @@ app.get "/#{root}fetch", (req, res, next) ->
     repo: req.query.project
     token: process.env.MINI_BREAKPAD_SERVER_TOKEN
 
-  processRel = (rel) ->
-    console.log "Queueing symbols from #{rel.name}..."
-    webhook.downloadAssets {'repository': {'full_name': req.query.project}, 'release': rel}
-    
+  processRel = (rel, rest) ->
+    console.log "Processing symbols from #{rel.name}..."
+    webhook.downloadAssets {'repository': {'full_name': req.query.project}, 'release': rel}, (err)->
+      if err?
+        console.log "Failed to process #{rel.name}: #{err}"  if err?
+        return
+      console.log "Processing symbols from #{rel.name}: Done..."
+      return if rest.length == 0
+      rel = rest.pop()
+      processRel rel, rest
+
   github.getReleases {}, (err, rels)->
     return next err if err?
     return next "Error fetching releases from #{req.query.project}" if !rels?
-    processRel rel for rel in rels
+
+    rel = rels.pop()
+    processRel rel, rels
   res.end()
 
 app.post "/#{root}crash_upload", (req, res, next) ->
@@ -101,7 +122,6 @@ app.post "/#{root}crash_upload", (req, res, next) ->
     res.send path.basename(filename)
     res.end()
 
-# handle the sympol upload post command.
 app.post "/#{root}symbol_upload", (req, res, next) ->
   return symbols.saveSymbols req, (error, destination) ->
     return next error if error?
@@ -111,10 +131,10 @@ app.post "/#{root}symbol_upload", (req, res, next) ->
 app.post "/#{root}login", passport.authenticate("local", successRedirect:"/#{root}", failureRedirect:"/#{root}login_page")
 
 app.get "/#{root}login_page", (req, res, next) ->
-  res.render 'login'
+  res.render 'login', {menu:'login', title: 'Login'}
 
 app.get "/#{root}", isLoggedIn, (req, res, next) ->
-  res.render 'index', title: 'Crash Reports', records: db.getAllRecords()
+  res.render 'index', {menu: 'crash', title: 'Crash Reports', records: db.getAllRecords()}
 
 app.get "/#{root}view/:id", isLoggedIn, (req, res, next) ->
   db.restoreRecord req.params.id, (err, record) ->
@@ -123,4 +143,7 @@ app.get "/#{root}view/:id", isLoggedIn, (req, res, next) ->
     reader.getStackTraceFromRecord record, (err, report) ->
       return next err if err?
       fields = record.fields
-      res.render 'view', {title: 'Crash Report', report, fields}
+      res.render 'view', {menu: 'crash', title: 'Crash Report', report, fields}
+
+app.get "/#{root}symbol/", isLoggedIn, (req, res, next) ->
+  res.render 'symbols', {menu: 'symbol', title: 'Symbols', symbols: symbDb.getAllRecords()}
