@@ -53,7 +53,7 @@ symbDb = new SymbolDatabase
 webhook = new WebHook(symbDb)
 
 startServer = () ->
-  port = process.env.MINI_BREAKPAD_SERVER_PORT ? 80
+  port = process.env.MINI_BREAKPAD_SERVER_PORT || process.env.PORT || 80
   app.listen port
   console.log "Listening on port #{port}"
   console.log "Using random admin password: #{secret_admin_password}" if secret_admin_password != process.env.MINI_BREAKPAD_ADMIN_PASSWORD
