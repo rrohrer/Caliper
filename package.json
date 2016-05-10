@@ -6,7 +6,8 @@
     "caliper": "bin/caliper"
   },
   "scripts": {
-    "prepublish": "grunt coffee"
+    "prepublish": "grunt coffee",
+    "start": " grunt && node lib/app.js"
   },
   "dependencies": {
     "body-parser": "1.14.1",
