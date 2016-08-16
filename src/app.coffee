@@ -49,8 +49,6 @@ isLoggedIn = (req, res, next) ->
 
 app = express()
 db = new Database
-symbDb = new SymbolDatabase
-webhook = new WebHook(symbDb)
 
 startServer = () ->
   port = process.env.MINI_BREAKPAD_SERVER_PORT || process.env.PORT || 80
@@ -58,10 +56,15 @@ startServer = () ->
   console.log "Listening on port #{port}"
   console.log "Using random admin password: #{secret_admin_password}" if secret_admin_password != process.env.MINI_BREAKPAD_ADMIN_PASSWORD
   console.log "Using random api_key: #{api_key}" if api_key != process.env.MINI_BREAKPAD_API_KEY
+  console.log "Using random server secret" if !process.env.MINI_BREAKPAD_SERVER_SECRET
   console.log "Using provided github server token" if process.env.MINI_BREAKPAD_SERVER_TOKEN
 
+symbDb = null
 db.on 'load', ->
   console.log "crash db ready"
+  symbDb = new SymbolDatabase
+  webhook = new WebHook(symbDb)
+
   symbDb.on 'load', ->
     console.log "symb db ready"
     startServer()
